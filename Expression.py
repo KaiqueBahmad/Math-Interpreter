@@ -11,18 +11,38 @@ class Expression:
         self.right:Term | 'Expression' = right
         self.floor:bool = False
         self.operand:Operation = operand
+        self.hasVariable = self.checkIfIHaveVariables()
+
+        #It's not used anywhere yet, maybe I'm going to remove it anytime
         if not isinstance(left, Expression) and not isinstance(right, Expression):
             self.floor = True
     
+    def checkIfIHaveVariables(self):
+        leftIsVariable  = False
+        rightIsVariable = False
+
+        if isinstance(self.left, Term):
+            leftIsVariable  = not self.left.constant
+        elif isinstance(self.left, Expression):
+            leftIsVariable = self.left.checkIfIHaveVariables()
+
+        if isinstance(self.right, Term):
+            rightIsVariable = not self.right.constant
+        elif isinstance(self.left, Expression):
+            rightIsVariable = self.right.checkIfIHaveVariables()
+
+        return leftIsVariable or rightIsVariable
+
     def __str__(self) -> str:
         return f"Exp({self.left}, {Expression.operandsMapping[self.operand]}, {self.right})"
 
     def derivate(self)->'Expression':
-        print(self)
-        if isinstance(self.left, Term) and isinstance(self.right, Term):
-            if self.left.constant and self.right.constant:
-                print("sim")
-                return Term("0")
+        # if isinstance(self.left, Term) and isinstance(self.right, Term):
+        #     if self.left.constant and self.right.constant:
+        #         print("sim")
+        #         return Term("0")
+        if ((isinstance(self.left, Term) and self.left.constant) or not self.left.hasVariable) and ((isinstance(self.right, Term) and self.right.constant)or not self.right.hasVariable):
+            pass
         return self.handleHandlers()["derivate"](self.left,self.right)
     
     def solve(self, variablesValues={})->float:
@@ -70,6 +90,7 @@ class Expression:
     def handleHandlers(self):
         if self.operand == Operation.INVALID:
             raise TypeError("Operator type is: "+str(self.operand))
+        print(self.operand)
         handlersMap = {
             Operation.ADITION        : {
                 "solve"   : Expression.handleAdition,
@@ -105,12 +126,16 @@ class Expression:
 
     @staticmethod
     def derivateAdition(a:Union[Term, 'Expression'], b:Union[Term, 'Expression']):
-        if isinstance(a, Expression):
-            # print(a)
-            a = a.derivate()
-        if isinstance(b, Expression):
-            # print(b)
-            b = b.derivate()
+        while isinstance(a, Expression) or isinstance(b, Expression):
+            if isinstance(a, Expression):
+                # print(a)
+                print("Derivando: ",a)
+                a = a.derivate()
+                print("Derivado:",a)
+            if isinstance(b, Expression):
+                # print(b)
+                print("Derivando: ",b)
+                b = b.derivate()
         if a.constant:
             return Expression.fallRule(
                 Expression(
@@ -165,7 +190,7 @@ class Expression:
         return a - b
 
     @staticmethod
-    def handleMultiplication(a, b):
+    def handleMultiplication(a:Union['Expression', Term], b:Union['Expression', Term]):
         return a * b
 
     @staticmethod

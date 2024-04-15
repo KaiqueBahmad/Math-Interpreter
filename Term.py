@@ -24,8 +24,10 @@ class Term:
             self.spRef:str = value
             return
         self.constant = Term.isfloat(value)
+
+        #Architecturally I think this variable dont make much sense, but it will make some 'ifs' somewhere easier :)
+        self.hasVariable:bool = not self.constant
         if (self.constant):
-            
             self.value = float(value)         
         else:
             if (len(value) > 1):
