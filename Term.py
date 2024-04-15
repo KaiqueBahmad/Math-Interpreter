@@ -8,6 +8,8 @@ class Term:
     #   self.ref stores the string reference to the Term, used after for evaluating
     #       him to a constant value, when it be provided
     def __init__(self, value:str):
+        if not isinstance(value, str):
+            value = str(value)
         self.constant:bool
         self.special:bool = False
         self.floor:bool = True

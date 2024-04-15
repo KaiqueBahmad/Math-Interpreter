@@ -18,7 +18,12 @@ class Expression:
         return f"Exp({self.left}, {Expression.operandsMapping[self.operand]}, {self.right})"
 
     def derivate(self)->'Expression':
-        return 
+        print(self)
+        if isinstance(self.left, Term) and isinstance(self.right, Term):
+            if self.left.constant and self.right.constant:
+                print("sim")
+                return Term("0")
+        return self.handleHandlers()["derivate"](self.left,self.right)
     
     def solve(self, variablesValues={})->float:
         #   When solve is called, it should check if left and right are
@@ -47,8 +52,10 @@ class Expression:
                     raise KeyError('There are variables on the expression, some value mapping should be provided for them in order to be able to solve')
             else:
                 right = right.value
-        return self.handleHandlers(self.operand)(left,right)
+        return self.handleHandlers()["solve"](left,right)
 
+    def simplify(self):
+        return self
 
     operandsMapping:dict = {
         Operation.ADITION       : '+',
@@ -59,17 +66,95 @@ class Expression:
         Operation.LOGARITMATION : '¬',
     }
 
-    @staticmethod
-    def handleHandlers(operator:Operation):
+    
+    def handleHandlers(self):
+        if self.operand == Operation.INVALID:
+            raise TypeError("Operator type is: "+str(self.operand))
         handlersMap = {
-            Operation.ADITION        : Expression.handleAdition,
-            Operation.SUBTRACTION    : Expression.handleSubtraction,
-            Operation.MULTIPLICATION : Expression.handleMultiplication,
-            Operation.DIVISION       : Expression.handleDivision,
-            Operation.EXPONENTIATION : Expression.handleExponentiation,
-            Operation.LOGARITMATION  : Expression.handleLogarithm
+            Operation.ADITION        : {
+                "solve"   : Expression.handleAdition,
+                "derivate": Expression.derivateAdition
+            },
+            #The difference between subtraction and adition actually dont exist
+            #so I should later remove the Operation.SUBTRACTION and threat it just like
+            #a commo ADITION
+            Operation.SUBTRACTION    : {
+                "solve"   : Expression.handleSubtraction,
+                "derivate": Expression.derivateSubtraction
+            },
+            Operation.MULTIPLICATION : {
+                "solve"   : Expression.handleMultiplication,
+                "derivate": Expression.derivateMultiplication
+            },
+            #Same as the comment above, maybe i can threat multiplication and division
+            #the same way
+            Operation.DIVISION       : {
+                "solve"   : Expression.handleDivision,
+                "derivate": Expression.derivateDivision
+            },
+            Operation.EXPONENTIATION : {
+                "solve"   : Expression.handleExponentiation,
+                "derivate": Expression.derivateExponentiation
+            },
+            Operation.LOGARITMATION  : {
+                "solve":Expression.handleLogarithm,
+                "derivate":Expression.derivateLogaritmation
+            }
         }
-        return handlersMap[operator]
+        return handlersMap[self.operand]
+
+    @staticmethod
+    def derivateAdition(a:Union[Term, 'Expression'], b:Union[Term, 'Expression']):
+        if isinstance(a, Expression):
+            # print(a)
+            a = a.derivate()
+        if isinstance(b, Expression):
+            # print(b)
+            b = b.derivate()
+        if a.constant:
+            return Expression.fallRule(
+                Expression(
+                    b,
+                    Operation.EXPONENTIATION,
+                    Term("1")
+                )
+            )
+        if b.constant:
+            return Expression.fallRule(
+                Expression(
+                    a,
+                    Operation.EXPONENTIATION,
+                    Term("1")
+                )
+            )      
+
+    @staticmethod
+    def fallRule(exp:'Expression')->'Expression':
+        return Expression(
+            Term(exp.right.value),
+            Operation.MULTIPLICATION,
+            Expression(
+                exp.left,
+                Operation.EXPONENTIATION,
+                Term(exp.right.value - 1)
+            )
+        ).simplify()
+
+    @staticmethod
+    def derivateSubtraction(a, b):
+        pass
+    @staticmethod
+    def derivateMultiplication(a, b):
+        pass
+    @staticmethod
+    def derivateDivision(a, b):
+        pass
+    @staticmethod
+    def derivateExponentiation(a, b):
+        pass
+    @staticmethod
+    def derivateLogaritmation(a, b):
+        pass
 
     @staticmethod
     def handleAdition(a, b):
