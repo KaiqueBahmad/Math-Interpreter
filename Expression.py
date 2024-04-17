@@ -90,7 +90,6 @@ class Expression:
     def handleHandlers(self):
         if self.operand == Operation.INVALID:
             raise TypeError("Operator type is: "+str(self.operand))
-        print(self.operand)
         handlersMap = {
             Operation.ADITION        : {
                 "solve"   : Expression.handleAdition,

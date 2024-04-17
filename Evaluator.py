@@ -36,11 +36,16 @@ class Evaluator:
     }
 
     @staticmethod
-    def evaluate(input:str) -> Expression:
-        tokenList = Evaluator.splitIntoTokenList(input)
+    def evaluate(input_:str) -> Expression:
+        input_ = Evaluator.removeUselessChars(input_)
+        tokenList = Evaluator.splitIntoTokenList(input_)
         Evaluator.syntaxCheck(tokenList.copy())
         return Evaluator.parse(tokenList)
     
+    @staticmethod
+    def removeUselessChars(string:str)->str:
+        return string.replace("\n","").replace(" ","")
+
     @staticmethod
     def parse(array:List[str]) -> Expression:
         #Parser will parse based on PENDAS
@@ -52,19 +57,18 @@ class Evaluator:
         count:int = 0
         levelOpen:int  = 0
         levelClose:int = 0
+
+        bracketStarts = []
+
         while count < len(array):
             if array[count] == brackets[0]:
-                if levelOpen == 0:
-                    start = count
-                levelOpen += 1
+                bracketStarts.append(count)
             if array[count] == brackets[1]:
-                levelClose += 1
-            if levelOpen == levelClose and levelOpen > 0:
-                levelOpen  = 0
-                levelClose = 0
+                start = bracketStarts.pop()
                 chunk = array[start+1:count]
                 array = array[:start]+[Evaluator.parse(chunk)]+array[count+1:]
-                count = count - start
+                if len(bracketStarts):
+                    count = bracketStarts[-1]
             count += 1
         #The code above parses all the parentesis recursively, from inside to outside
         #------------------------------------------------------------------------------

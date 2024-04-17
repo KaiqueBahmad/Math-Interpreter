@@ -1,7 +1,7 @@
-import math
+from math import e, pi
 
 class Term:
-    specialConstants = {'e':math.e, 'p':math.pi}
+    specialConstants = {'e':e, 'p':pi}
 
     #   self.constant stands for answering if Term is a constant or a variable
     #   self.value stores a numeric value, appliable only for constant
