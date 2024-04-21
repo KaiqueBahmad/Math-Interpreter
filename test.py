@@ -1,4 +1,4 @@
-from Evaluator import Evaluator
+from Expression import Evaluator
 from Expression import Expression
 from Term import Term
 from Operation import Operation
