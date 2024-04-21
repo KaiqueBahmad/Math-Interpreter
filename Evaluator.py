@@ -1,10 +1,9 @@
-from Expression import Expression
 from Operation import Operation
 from Term import Term
 from Properties import *
 import typing
 from typing import Tuple, List
-
+from Expression import Expression
 
 class Evaluator:
     #   Here we will have a long journey to make a string input
@@ -52,6 +51,7 @@ class Evaluator:
         #Parentesis solves will work recursivelly
         #Sample input    vvv
         #               ["~12", "*", "x", "+", "(", "2", "/", "x", ")"]
+        print('CHUNK: ',array)
         specialChars:list = list(Evaluator.operandsMapping.values())
         brackets:list = ['(',')']
         count:int = 0
@@ -67,9 +67,12 @@ class Evaluator:
                 start = bracketStarts.pop()
                 chunk = array[start+1:count]
                 array = array[:start]+[Evaluator.parse(chunk)]+array[count+1:]
-                if len(bracketStarts):
-                    count = bracketStarts[-1]
+                count = 0
+                bracketStarts = []
+                # if len(bracketStarts):
+                #     count = bracketStarts[-1]
             count += 1
+        # return
         #The code above parses all the parentesis recursively, from inside to outside
         #------------------------------------------------------------------------------
         #This code will parse every exponentiation or logarithmation

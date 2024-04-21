@@ -3,9 +3,7 @@ import typing
 from Operation import Operation
 from Term import Term
 from math import log
-
 class Expression:
-
     def __init__(self, left:Union[Term, 'Expression'], operand:Operation, right:Union[Term, 'Expression']):
         self.left:Term | 'Expression' = left
         self.right:Term | 'Expression' = right
@@ -88,6 +86,7 @@ class Expression:
 
     
     def handleHandlers(self):
+        print(self.operand)
         if self.operand == Operation.INVALID:
             raise TypeError("Operator type is: "+str(self.operand))
         handlersMap = {
@@ -174,8 +173,13 @@ class Expression:
     def derivateDivision(a, b):
         pass
     @staticmethod
-    def derivateExponentiation(a, b):
-        pass
+    def derivateExponentiation(a:Union[Term, 'Expression'], b:Union[Term, 'Expression']):
+        if (isinstance(a, Term) and isinstance(b, Term)):
+            if not a.constant and b.constant:
+                return 
+        else:
+            raise NotImplementedError("Derivada ainda não implementada")
+
     @staticmethod
     def derivateLogaritmation(a, b):
         pass
