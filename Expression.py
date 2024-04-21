@@ -77,10 +77,11 @@ class Expression:
     def simplify(exp:'Expression'):
         if (isinstance(exp.left, Term) and exp.left.constant and exp.left.value == 0): 
             if exp.operand in Properties["zeroInterIrrelevantOperands"]:
-                return exp.right
+                exp.right 
         if (isinstance(exp.right, Term) and exp.right.constant and exp.right.value == 0):
             if exp.operand in Properties["zeroInterIrrelevantOperands"]:
                     return exp.left
+        
         if isinstance(exp.left, Expression):
             exp.left = Expression.simplify(exp.left)
         if isinstance(exp.right, Expression):
