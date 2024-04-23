@@ -35,6 +35,8 @@ class Term:
             if (value == ''):
                 raise BlankRefException('Reference for a variable can\'t be a blank string.')
             self.ref = value
+        if self.negative:
+            self.value = -self.value
     
     @staticmethod
     def isfloat(input:str)->bool:
@@ -53,8 +55,8 @@ class Term:
             return self.ref
     
     def __str__(self) -> str:
-        if self.negative:
-            return '~'+self.toString()
+        # if self.negative:
+        #     return '~'+self.toString()
         return self.toString()
 
 class BlankRefException(Exception):

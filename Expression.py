@@ -74,19 +74,16 @@ class Expression:
         return self.handleHandlers()["solve"](left,right)
 
     @staticmethod
-    def simplify(exp:'Expression'):
-        if (isinstance(exp.left, Term) and exp.left.constant and exp.left.value == 0): 
-            if exp.operand in Properties["zeroInterIrrelevantOperands"]:
-                exp.right 
-        if (isinstance(exp.right, Term) and exp.right.constant and exp.right.value == 0):
-            if exp.operand in Properties["zeroInterIrrelevantOperands"]:
-                    return exp.left
-        
-        if isinstance(exp.left, Expression):
-            exp.left = Expression.simplify(exp.left)
-        if isinstance(exp.right, Expression):
-            exp.right = Expression.simplify(exp.right)
+    def simplify(exp:'Expression', dontRepeat:bool = False):
         return exp
+
+    @staticmethod
+    def removeZeroSums(exp:'Expression'):
+        if isinstance(exp.left, Term) and exp.left.value == 0:
+            if isinstance(exp.right, Expression):
+                return Expression
+            else:
+                return 
 
     operandsMapping:dict = {
         Operation.ADITION       : '+',
@@ -137,32 +134,35 @@ class Expression:
 
     @staticmethod
     def derivateAdition(a:Union[Term, 'Expression'], b:Union[Term, 'Expression']):
-        while isinstance(a, Expression) or isinstance(b, Expression):
-            if isinstance(a, Expression):
-                # print(a)
-                print("Derivando: ",a)
-                a = a.derivate()
-                print("Derivado:",a)
-            if isinstance(b, Expression):
-                # print(b)
-                print("Derivando: ",b)
-                b = b.derivate()
-        if a.constant:
-            return Expression.fallRule(
-                Expression(
-                    b,
-                    Operation.EXPONENTIATION,
-                    Term("1")
-                )
-            )
-        if b.constant:
-            return Expression.fallRule(
-                Expression(
-                    a,
-                    Operation.EXPONENTIATION,
-                    Term("1")
-                )
-            )      
+        return Term('1')
+
+
+        # while isinstance(a, Expression) or isinstance(b, Expression):
+        #     if isinstance(a, Expression):
+        #         # print(a)
+        #         print("Derivando: ",a)
+        #         a = a.derivate()
+        #         print("Derivado:",a)
+        #     if isinstance(b, Expression):
+        #         # print(b)
+        #         print("Derivando: ",b)
+        #         b = b.derivate()
+        # if a.constant:
+        #     return Expression.fallRule(
+        #         Expression(
+        #             b,
+        #             Operation.EXPONENTIATION,
+        #             Term("1")
+        #         )
+        #     )
+        # if b.constant:
+        #     return Expression.fallRule(
+        #         Expression(
+        #             a,
+        #             Operation.EXPONENTIATION,
+        #             Term("1")
+        #         )
+        #     )      
 
     @staticmethod
     def fallRule(exp:'Expression')->'Expression':
@@ -177,25 +177,54 @@ class Expression:
         ).simplify()
 
     @staticmethod
-    def derivateSubtraction(a, b):
-        pass
+    def derivateSubtraction(a:Term, b:Term):
+        if a.constant:
+            return Term('~1')
+        if b.constant:
+            return Term('1')
+
     @staticmethod
-    def derivateMultiplication(a, b):
-        pass
+    def derivateMultiplication(a:Term, b:Term):
+        if b.constant and not a.constant:
+            temp = b
+            b = a
+            a = temp
+        return a
+
     @staticmethod
     def derivateDivision(a, b):
-        pass
+        if isinstance(a, Term) and a.constant:
+            return Expression(a, Operation.MULTIPLICATION, Expression.derivate(Expression(b, Operation.EXPONENTIATION, Term("~1"))))
     @staticmethod
     def derivateExponentiation(a:Union[Term, 'Expression'], b:Union[Term, 'Expression']):
-        if (isinstance(a, Term) and isinstance(b, Term)):
-            if not a.constant and b.constant:
-                return Evaluator.evaluate(f'{b.value}*{a.ref}^{b.value-1}')
-        else:
-            raise NotImplementedError("Derivada ainda não implementada")
+        if not a.constant and b.constant:
+
+            res = Expression(b, Operation.MULTIPLICATION,Expression(a,Operation.EXPONENTIATION,b.value-1))
+            return res
+        if a.constant and not b.constant:
+            return Expression(
+                Expression(
+                    a,
+                    Operation.EXPONENTIATION,
+                    b
+                ),
+                Operation.MULTIPLICATION,
+                Expression(
+                    Term('e'),
+                    Operation.LOGARITMATION,
+                    a
+                )
+            )
 
     @staticmethod
     def derivateLogaritmation(a, b):
-        pass
+        return Expression(
+            Term('1'), Operation.DIVISION,
+            Expression(
+                b, Operation.MULTIPLICATION,
+                Expression(Term('e'), Operation.LOGARITMATION, a)
+            )
+        )
 
     @staticmethod
     def handleAdition(a, b):
@@ -268,7 +297,7 @@ class Evaluator:
         #Parentesis solves will work recursivelly
         #Sample input    vvv
         #               ["~12", "*", "x", "+", "(", "2", "/", "x", ")"]
-        print('CHUNK: ',array)
+        # print('CHUNK: ',array)
         specialChars:list = list(Evaluator.operandsMapping.values())
         brackets:list = ['(',')']
         count:int = 0

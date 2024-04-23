@@ -2,7 +2,7 @@ from Expression import Evaluator
 from Expression import Expression
 from Term import Term
 from Operation import Operation
-
+import time
 # 1 + 1 + 1
 # exp = Expression(
 #     Expression(Term("1.2"), Operation.ADITION, Term("1")),
@@ -12,14 +12,26 @@ from Operation import Operation
 # print(Evaluator.devaluate(exp))
 
 
+# string = '0+((x+0)+(x-(0-0)))'
+# t1 = time.time()
+string = 'x^~5'
+string = input("Insira a equação: ")
+exp = Evaluator.evaluate(string)
+print(exp)
+derivada = Expression.derivate(exp)
+print(derivada)
+# t2 = time.time()
+# print(t2-t1)
+
+
 #string = "(x+2)-(x+3)"
 
 # string = "(~127^2+2¬8)^(15*2)"
-string = 'x^2'
-print("Before parse:",string, sep='\n')
-exp = Evaluator.evaluate(string)
-print("After parse:",exp,sep='\n')
-print("Derivative:",exp.derivate())
+# string = 'x^2'
+# print("Before parse:",string, sep='\n')
+# exp = Evaluator.evaluate(string)
+# print("After parse:",exp,sep='\n')
+# print("Derivative:",exp.derivate())
 # print("Solve:",exp.solve({"x":1/2}), sep='\n')
 # print("---------------------------")
 # print("Derivative:",exp.derivate())
